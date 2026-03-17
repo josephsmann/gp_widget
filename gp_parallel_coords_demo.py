@@ -39,9 +39,13 @@ def _(mo):
 
     **Interactions**
     - **Click** anywhere in the plot → add a constraint centred on that `(x, y)`
-    - **Drag body** of a constraint → shift it vertically
+    - **Drag body** of a constraint → move it (left/right = x position, up/down = y shift)
     - **Drag top / bottom handle** → resize the `y`-range
     - **Double-click** a constraint → remove it
+
+    Switch kernels to see how the prior's smoothness changes — constraints on rough
+    (Matérn 1/2) samples propagate very locally, while RBF samples are smooth and
+    constraints ripple further.
     """)
     return
 
@@ -56,23 +60,41 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    n_samples_slider = mo.ui.slider(50, 500, value=200, step=50, label="Number of samples")
-    lengthscale_slider = mo.ui.slider(0.05, 1.0, value=0.3, step=0.05, label="RBF lengthscale")
-    mo.hstack([n_samples_slider, lengthscale_slider])
-    return lengthscale_slider, n_samples_slider
+    n_samples_slider = mo.ui.slider(50, 500, value=200, step=50, label="Samples")
+    lengthscale_slider = mo.ui.slider(0.05, 1.0, value=0.3, step=0.05, label="Lengthscale")
+    kernel_dropdown = mo.ui.dropdown(
+        options={
+            "RBF (squared exponential)": "rbf",
+            "Matérn 1/2 (Laplace / rough)": "matern12",
+            "Matérn 3/2 (once differentiable)": "matern32",
+            "Matérn 5/2 (twice differentiable)": "matern52",
+            "Periodic": "periodic",
+            "Linear": "linear",
+        },
+        value="rbf",
+        label="Kernel",
+    )
+    mo.hstack([kernel_dropdown, lengthscale_slider, n_samples_slider])
+    return kernel_dropdown, lengthscale_slider, n_samples_slider
 
 
 @app.cell
-def _(lengthscale_slider, n_samples_slider, np):
-    # Build RBF kernel and draw samples from GP prior
-    _n_x = 80
+def _(kernel_dropdown, lengthscale_slider, n_samples_slider, np):
+    _n_x = 50
     x_values = np.linspace(0, 1, _n_x)
+    _ls = lengthscale_slider.value
+    _d = np.abs(x_values[:, None] - x_values[None, :])  # pairwise distances
 
-    def _rbf(x1, x2, ls):
-        d = x1[:, None] - x2[None, :]
-        return np.exp(-0.5 * d**2 / ls**2)
+    _kernels = {
+        "rbf":       lambda d: np.exp(-0.5 * d**2 / _ls**2),
+        "matern12":  lambda d: np.exp(-d / _ls),
+        "matern32":  lambda d: (1 + np.sqrt(3) * d / _ls) * np.exp(-np.sqrt(3) * d / _ls),
+        "matern52":  lambda d: (1 + np.sqrt(5) * d / _ls + 5 * d**2 / (3 * _ls**2)) * np.exp(-np.sqrt(5) * d / _ls),
+        "periodic":  lambda d: np.exp(-2 * np.sin(np.pi * d) ** 2 / _ls**2),
+        "linear":    lambda d: (x_values[:, None] - 0.5) @ (x_values[None, :] - 0.5) / _ls**2,
+    }
 
-    _K = _rbf(x_values, x_values, lengthscale_slider.value) + 1e-6 * np.eye(_n_x)
+    _K = _kernels[kernel_dropdown.value](_d) + 1e-6 * np.eye(_n_x)
     _L = np.linalg.cholesky(_K)
 
     _rng = np.random.default_rng(42)
@@ -82,17 +104,30 @@ def _(lengthscale_slider, n_samples_slider, np):
 
 
 @app.cell
-def _(ContinuousParallelCoords, mo, x_values, y_samples):
+def _(ContinuousParallelCoords, mo):
+    # Created once — brush constraints survive kernel/slider changes.
     widget = mo.ui.anywidget(ContinuousParallelCoords(
-        x_values.tolist(),
-        y_samples.tolist(),
+        [0.0], [[0.0]],
         height=420,
-        width=720,
+        width=1000,
         x_label="x",
         y_label="f(x)",
     ))
     widget
     return (widget,)
+
+
+@app.cell
+def _(widget):
+    underlying = widget.widget
+    return (underlying,)
+
+
+@app.cell
+def _(underlying, x_values, y_samples):
+    underlying.x_values = x_values.tolist()
+    underlying.y_samples = y_samples.tolist()
+    return
 
 
 @app.cell
