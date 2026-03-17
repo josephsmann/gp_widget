@@ -72,7 +72,7 @@ def _(mo):
             "Periodic": "periodic",
             "Linear": "linear",
         },
-        value="rbf",
+        value="RBF (squared exponential)",
         label="Kernel",
     )
     mo.hstack([kernel_dropdown, lengthscale_slider, n_samples_slider])
