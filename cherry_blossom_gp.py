@@ -174,6 +174,7 @@ def _(mo):
 
 @app.cell
 def _(alt, cherry_df, mo):
+    alt.data_transformers.disable_max_rows()
     # Observed data with interval brush — drag a rectangle to select an era
     _brush = alt.selection_interval(encodings=["x", "y"])
     _base  = alt.Chart(cherry_df.sample(n=min(400, len(cherry_df)), seed=1))
@@ -209,6 +210,24 @@ def _(link_toggle, mo, np, obs_chart, pl, widget):
         _mu    = float(np.mean(_doys))
         _sig   = float(max(np.std(_doys), 3.0))
         widget.brush_axes = {f"{_x:.6f}": [_mu - _sig, _mu + _sig]}
+    return
+
+
+@app.cell
+def _(link_toggle, mo, obs_chart):
+    mo.stop(not link_toggle.value)
+    mo.stop(
+        len(obs_chart.value) != 0,
+        mo.md("*Selection active — constraint linked to GP plot.*"),
+    )
+    mo.callout(
+        mo.md(
+            "**No selection detected.** Drag a rectangle on the scatter plot above to select an era. "
+            "If you drew a selection but nothing appeared here, the chart may have hit Altair's row limit — "
+            "try a narrower brush or place a constraint directly on the GP plot."
+        ),
+        kind="warn",
+    )
     return
 
 
