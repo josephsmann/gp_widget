@@ -44,8 +44,9 @@ def _(mo):
     - **Double-click** a constraint → remove it
 
     Switch kernels to see how the prior's smoothness changes — constraints on rough
-    (Matérn 1/2) samples propagate very locally, while RBF samples are smooth and
-    constraints ripple further.
+    (Matérn 1/2) samples propagate very locally, while RBF samples are infinitely
+    smooth and constraints ripple further. McElreath uses the RBF kernel in
+    *Statistical Rethinking* ch. 14.
     """)
     return
 
@@ -67,7 +68,7 @@ def _(mo):
             "RBF (squared exponential)": "rbf",
             "Matérn 1/2 (Laplace / rough)": "matern12",
             "Matérn 3/2 (once differentiable)": "matern32",
-            "Matérn 5/2 (twice differentiable)": "matern52",
+            "Matérn 5/2 (twice differentiable)": "matern52",  # common GP library default
             "Periodic": "periodic",
             "Linear": "linear",
         },
