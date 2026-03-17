@@ -57,8 +57,8 @@ function render({ model, el }) {
     const xs = model.get('x_values');
     const ss = model.get('y_samples');
 
-    const flat = ss.flat();
-    const rawLo = Math.min(...flat), rawHi = Math.max(...flat);
+    let rawLo = Infinity, rawHi = -Infinity;
+    for (const row of ss) { for (const v of row) { if (v < rawLo) rawLo = v; if (v > rawHi) rawHi = v; } }
     const pad   = (rawHi - rawLo || 1) * 0.06;
     const yLo   = rawLo - pad,  yHi = rawHi + pad;
     const xLo   = Math.min(...xs), xHi = Math.max(...xs);
