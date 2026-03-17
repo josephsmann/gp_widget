@@ -135,10 +135,11 @@ def _(cherry_df, lengthscale_slider, n_samples_slider, np):
 
 
 @app.cell
-def _(ContinuousParallelCoords, gp_samples, mo, x_years):
+def _(ContinuousParallelCoords, mo):
+    # Create widget once — no dependency on gp_samples/x_years so brush_axes
+    # are preserved when sliders change. Data is injected imperatively below.
     widget = mo.ui.anywidget(ContinuousParallelCoords(
-        x_years.tolist(),
-        gp_samples.tolist(),
+        [0.0], [[0.0]],
         height=380,
         width=740,
         x_label="Year",
@@ -146,6 +147,22 @@ def _(ContinuousParallelCoords, gp_samples, mo, x_years):
     ))
     widget
     return (widget,)
+
+
+@app.cell
+def _(widget):
+    # Expose the underlying AnyWidget object. This is a plain Python object,
+    # not a UIElement, so cells that depend on it won't re-run on brush changes.
+    underlying = widget.widget
+    return (underlying,)
+
+
+@app.cell
+def _(gp_samples, underlying, x_years):
+    # Runs when sliders change; updates data in place, leaving brush_axes intact.
+    underlying.x_values = x_years.tolist()
+    underlying.y_samples = gp_samples.tolist()
+    return
 
 
 @app.cell
