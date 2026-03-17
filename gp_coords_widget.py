@@ -237,6 +237,11 @@ function render({ model, el }) {
       root.appendChild(topH);
       root.appendChild(botH);
 
+      // stop clicks on constraint elements from bubbling to the root add-handler
+      body.addEventListener('click', e => e.stopPropagation());
+      topH.addEventListener('click', e => e.stopPropagation());
+      botH.addEventListener('click', e => e.stopPropagation());
+
       // double-click removes constraint
       body.addEventListener('dblclick', e => {
         e.stopPropagation();
