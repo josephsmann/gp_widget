@@ -7,7 +7,8 @@
 #     "altair",
 #     "anywidget",
 #     "traitlets",
-#     "httpx==0.28.1",
+#     "httpx",
+#     "gp-coords-widget @ git+https://github.com/josephsmann/gp_widget.git",
 # ]
 # ///
 
@@ -32,6 +33,10 @@ def _():
 def _(mo):
     mo.md("""
     # Cherry Blossoms & Gaussian Processes
+
+
+    This is meant to illustrate a GP widget ( https://github.com/josephsmann/gp_widget )I vibed after seeing Vincent's parallel coordinates widget (see https://youtu.be/MPqd3Y4wBig ).
+    Also, thank you to Richard McElreath for this example and for his fantastic course `Rethinking Statistics`. Each version is better than the last.
 
     Kyoto has recorded the first day of cherry blossom bloom almost every year
     since **812 AD** — one of the longest environmental time series in existence.

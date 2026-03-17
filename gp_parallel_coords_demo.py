@@ -7,6 +7,7 @@
 #     "altair",
 #     "anywidget",
 #     "traitlets",
+#     "gp-coords-widget @ git+https://github.com/josephsmann/gp_widget.git",
 # ]
 # ///
 
