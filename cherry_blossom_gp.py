@@ -7,7 +7,7 @@
 #     "altair",
 #     "anywidget",
 #     "traitlets",
-#     "httpx",
+#     "httpx==0.28.1",
 #     "gp-coords-widget @ git+https://github.com/josephsmann/gp_widget.git",
 # ]
 # ///
@@ -277,7 +277,7 @@ def _(alt, mo, np, pl, widget, x_years):
         alt.Chart(_df).mark_line(color="#4477aa", strokeWidth=2)
         .encode(
             x=alt.X("year:Q", title="Year"),
-            y=alt.Y("mean:Q", title="Day of first bloom"),
+            y=alt.Y("mean:Q", title="Day of first bloom", scale=alt.Scale(zero=False)),
             tooltip=["year:Q", alt.Tooltip("mean:Q", format=".1f")],
         )
     )
