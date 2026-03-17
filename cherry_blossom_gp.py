@@ -7,7 +7,7 @@
 #     "altair",
 #     "anywidget",
 #     "traitlets",
-#     "httpx",
+#     "httpx==0.28.1",
 # ]
 # ///
 
@@ -51,7 +51,9 @@ def _(mo):
       the distribution on that data point — watch implausible histories fade out
 
     ### Interactions
-    - **Click** on the plot to add a constraint at that (year, doy)
+    - **Drag a rectangle** in the scatter plot below, then tick *Link scatter → GP constraints*
+      to automatically place a constraint at the centroid of the selected observations
+    - **Click** on the GP plot to manually add a constraint
     - **Drag body** of a constraint left/right to change the year, up/down to shift the range
     - **Drag top/bottom handle** to tighten or loosen the tolerance
     - **Double-click** a constraint to remove it
@@ -142,19 +144,49 @@ def _(ContinuousParallelCoords, gp_samples, mo, x_years):
 
 
 @app.cell
+def _(mo):
+    link_toggle = mo.ui.checkbox(label="Link scatter selection → GP constraints")
+    link_toggle
+    return (link_toggle,)
+
+
+@app.cell
 def _(alt, cherry_df, mo):
-    # Overlay observed data points as a reference layer
-    _obs = (
-        alt.Chart(cherry_df.sample(n=min(300, len(cherry_df)), seed=1))
-        .mark_circle(size=30, opacity=0.5, color="#e07b39")
+    # Observed data with interval brush — drag a rectangle to select an era
+    _brush = alt.selection_interval(encodings=["x", "y"])
+    _base  = alt.Chart(cherry_df.sample(n=min(400, len(cherry_df)), seed=1))
+    _obs   = (
+        _base.mark_circle(size=35, opacity=0.7)
         .encode(
             x=alt.X("year:Q", scale=alt.Scale(domain=[812, 2015]), title="Year"),
-            y=alt.Y("doy:Q", title="Day of first bloom"),
+            y=alt.Y("doy:Q", title="Day of first bloom", scale=alt.Scale(zero=False)),
+            color=alt.condition(_brush, alt.value("#e07b39"), alt.value("#cccccc")),
             tooltip=["year:Q", "doy:Q"],
         )
-        .properties(width=740, height=120, title="Observed data (orange dots)")
+        .add_params(_brush)
+        .properties(
+            width=740, height=150,
+            title="Observed data — drag to select an era, then toggle linking above",
+        )
     )
-    mo.ui.altair_chart(_obs)
+    obs_chart = mo.ui.altair_chart(_obs)
+    obs_chart
+    return (obs_chart,)
+
+
+@app.cell
+def _(link_toggle, mo, np, obs_chart, pl, widget):
+    mo.stop(not link_toggle.value)
+    _sel = pl.DataFrame(obs_chart.value)
+    if len(_sel) == 0:
+        widget.brush_axes = {}
+    else:
+        _years = _sel["year"].to_numpy()
+        _doys  = _sel["doy"].to_numpy()
+        _x     = float(np.mean(_years))
+        _mu    = float(np.mean(_doys))
+        _sig   = float(max(np.std(_doys), 3.0))
+        widget.brush_axes = {f"{_x:.6f}": [_mu - _sig, _mu + _sig]}
     return
 
 
