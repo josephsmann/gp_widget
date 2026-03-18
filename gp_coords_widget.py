@@ -375,8 +375,8 @@ class ContinuousParallelCoords(anywidget.AnyWidget):
 
     def __init__(
         self,
-        x_values,
-        y_samples,
+        x_values=None,
+        y_samples=None,
         *,
         colors=None,
         height=400,
@@ -384,8 +384,8 @@ class ContinuousParallelCoords(anywidget.AnyWidget):
         x_label="x",
         y_label="f(x)",
     ):
-        xs  = [float(v) for v in x_values]
-        ys  = [[float(v) for v in row] for row in y_samples]
+        xs  = [float(v) for v in (x_values or [0.0])]
+        ys  = [[float(v) for v in row] for row in (y_samples or [[0.0]])]
         col = list(colors) if colors is not None else []
         super().__init__(
             x_values=xs,

@@ -61,8 +61,8 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    n_samples_slider = mo.ui.slider(50, 500, value=200, step=50, label="Samples")
-    lengthscale_slider = mo.ui.slider(0.05, 1.0, value=0.3, step=0.05, label="Lengthscale")
+    n_samples_slider = mo.ui.slider(50, 2000, value=200, step=50, label="Samples")
+    lengthscale_slider = mo.ui.slider(0.02, 1.0, value=0.3, step=0.02, label="Lengthscale")
     kernel_dropdown = mo.ui.dropdown(
         options={
             "RBF (squared exponential)": "rbf",
@@ -81,7 +81,7 @@ def _(mo):
 
 @app.cell
 def _(kernel_dropdown, lengthscale_slider, n_samples_slider, np):
-    _n_x = 50
+    _n_x = 80
     x_values = np.linspace(0, 1, _n_x)
     _ls = lengthscale_slider.value
     _d = np.abs(x_values[:, None] - x_values[None, :])  # pairwise distances
@@ -100,15 +100,14 @@ def _(kernel_dropdown, lengthscale_slider, n_samples_slider, np):
 
     _rng = np.random.default_rng(42)
     _Z = _rng.standard_normal((_n_x, n_samples_slider.value))
-    y_samples = (_L @ _Z).T  # (n_samples, n_x)
-    return x_values, y_samples
+    yy_samples = (_L @ _Z).T  # (n_samples, n_x)
+    return (x_values,)
 
 
 @app.cell
 def _(ContinuousParallelCoords, mo):
     # Created once — brush constraints survive kernel/slider changes.
     widget = mo.ui.anywidget(ContinuousParallelCoords(
-        [0.0], [[0.0]],
         height=420,
         width=1000,
         x_label="x",

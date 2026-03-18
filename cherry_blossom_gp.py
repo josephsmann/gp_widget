@@ -139,7 +139,6 @@ def _(ContinuousParallelCoords, mo):
     # Create widget once — no dependency on gp_samples/x_years so brush_axes
     # are preserved when sliders change. Data is injected imperatively below.
     widget = mo.ui.anywidget(ContinuousParallelCoords(
-        [0.0], [[0.0]],
         height=380,
         width=740,
         x_label="Year",
