@@ -100,8 +100,8 @@ def _(kernel_dropdown, lengthscale_slider, n_samples_slider, np):
 
     _rng = np.random.default_rng(42)
     _Z = _rng.standard_normal((_n_x, n_samples_slider.value))
-    yy_samples = (_L @ _Z).T  # (n_samples, n_x)
-    return (x_values,)
+    y_samples = (_L @ _Z).T  # (n_samples, n_x)
+    return x_values, y_samples
 
 
 @app.cell
@@ -121,6 +121,12 @@ def _(ContinuousParallelCoords, mo):
 def _(widget):
     underlying = widget.widget
     return (underlying,)
+
+
+@app.cell
+def _(y_samples):
+    y_samples.shape, y_samples[:5, :5], len(y_samples.tolist()), len(y_samples.tolist()[0])
+    return
 
 
 @app.cell
